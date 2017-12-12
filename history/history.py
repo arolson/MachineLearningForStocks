@@ -8,22 +8,9 @@ import pandas as pd
 def get_googlefinance_history_data(symbols, start_date, end_date):
     if not symbols:
         return
-    base_url = "https://finance.google.com/finance/historical"
-    query = {
-        'q': '',
-        'startdate': '{start_date}'.format(**locals()),
-        'enddate': '{end_date}'.format(**locals()),
-        'output': 'csv'
-    }
     results = {}
     for symbol in symbols:
-        query['q'] = symbol
-        url_options = urllib.urlencode(query)
-        full_url = base_url + '?' + url_options
-        try:data = urllib2.urlopen(full_url)
-        except urllib2.HTTPError as e:
-            print e.code
-            print e.read()
+        data = url_client(symbol, start_date, end_date)
         results[symbol] = to_array(data)
     return results
 # Turn that data into a readable array

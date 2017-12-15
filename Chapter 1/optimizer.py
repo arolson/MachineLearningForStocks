@@ -12,7 +12,6 @@ def test_run():
     min_result = spo.minimize(f, xGuess, method='SLSQP', options={'disp' : True})
     print "Minima found at:"
     print 'X= {}, Y = {}'.format(min_result.x, min_result.fun)
-
     # Plot function values, mark Minima
     xPlot = np.linspace(0.5,2.5,21)
     yPlot = f(xPlot)

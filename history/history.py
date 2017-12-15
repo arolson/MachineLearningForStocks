@@ -47,6 +47,7 @@ def url_client(symbol):
     query = {
         'symbol': '{symbol}'.format(**locals()),
         'function': 'TIME_SERIES_DAILY',
+        'outputsize' : 'compact',
         'apikey': os.environ["ALPHA_VANTAGE_API_KEY"],
         'datatype': 'csv'
     }

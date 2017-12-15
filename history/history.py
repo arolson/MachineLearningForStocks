@@ -2,9 +2,9 @@ import urllib, urllib2
 import csv
 import pandas as pd
 import os
-# Historical data can only come in the format of a csv file
+# Historical data can only come in the format of a csv file if using google finance
 # ex: https://finance.google.com/finance/historical?q=AAPL&startdate=01/01/2017&enddate=01/06/2017&output=csv
-# TODO: Switch to alpha vantage
+# TODO: using alpha vantage, add your apikey => to your ~/.bash_profile under key: ALPHA_VANTAGE_API_KEY
 # https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo&datatype=csv
 # Get Google finance data
 def get_googlefinance_history_data(symbols):
@@ -23,13 +23,12 @@ def to_array(data):
         array.append(line)
     # Fix CSV Weirdness
     for word in array:
-        word['Date'] = word.pop('timestamp')
+        word['date'] = word.pop('timestamp')
     return array
 
-def get_csv_data(symbols, start_date, end_date):
+def get_csv_data(symbols):
     if "SPY" not in symbols:  # add SPY for reference, if absent
         symbols.insert(0, "SPY")
-    dates = pd.date_range(start_date, end_date)
     df_final = pd.DataFrame()
 
     for symbol in symbols:

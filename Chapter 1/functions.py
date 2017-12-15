@@ -53,3 +53,9 @@ def compute_daily_returns(df):
     daily_returns[1:] = (df[1:] / df[:-1].values) - 1
     daily_returns.ix[0, :] = 0
     return daily_returns
+
+def compute_normed(df):
+    normed = df.copy()
+    normed[1:] = df[1:] / df[:-1].values
+    normed.ix[0,:] = 0
+    return normed

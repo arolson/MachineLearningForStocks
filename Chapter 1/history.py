@@ -1,18 +1,16 @@
 import urllib, urllib2
 import csv
 import pandas as pd
-import os
 # Historical data can only come in the format of a csv file
 # ex: https://finance.google.com/finance/historical?q=AAPL&startdate=01/01/2017&enddate=01/06/2017&output=csv
-# TODO: Switch to alpha vantage
-# https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=demo&datatype=csv
+
 # Get Google finance data
-def get_googlefinance_history_data(symbols):
+def get_googlefinance_history_data(symbols, start_date, end_date):
     if not symbols:
         return
     results = {}
     for symbol in symbols:
-        data = url_client(symbol)
+        data = url_client(symbol, start_date, end_date)
         results[symbol] = to_array(data)
     return results
 # Turn that data into a readable array
@@ -23,33 +21,32 @@ def to_array(data):
         array.append(line)
     # Fix CSV Weirdness
     for word in array:
-        word['Date'] = word.pop('timestamp')
+        word['Date'] = word.pop('\xef\xbb\xbfDate')
     return array
 
 def get_csv_data(symbols, start_date, end_date):
     if "SPY" not in symbols:  # add SPY for reference, if absent
         symbols.insert(0, "SPY")
     dates = pd.date_range(start_date, end_date)
-    df_final = pd.DataFrame()
+    df_final = pd.DataFrame(index=dates)
 
     for symbol in symbols:
-        data = url_client(symbol)
-        df_temp = pd.read_csv(data, parse_dates=True, index_col="timestamp",
-                usecols=["timestamp", "close"], na_values=["nan"])
-        df_temp = df_temp.rename(columns={"close": symbol})
-        df_final = pd.concat([df_final,df_temp], axis=1)
-
+        data = url_client(symbol, start_date, end_date)
+        df_temp = pd.read_csv(data, parse_dates=True, index_col="Date",
+                usecols=["Date", "Close"], na_values=["nan"])
+        df_temp = df_temp.rename(columns={"Close": symbol})
+        df_final = df_final.join(df_temp)
         if symbol == "SPY":  # drop dates SPY did not trade
             df_final = df_final.dropna(subset=["SPY"])
     return df_final
 
-def url_client(symbol):
-    base_url = "https://www.alphavantage.co/query"
+def url_client(symbol, start_date, end_date):
+    base_url = "https://finance.google.com/finance/historical"
     query = {
-        'symbol': '{symbol}'.format(**locals()),
-        'function': 'TIME_SERIES_DAILY',
-        'apikey': os.environ["ALPHA_VANTAGE_API_KEY"],
-        'datatype': 'csv'
+        'q': '{symbol}'.format(**locals()),
+        'startdate': '{start_date}'.format(**locals()),
+        'enddate': '{end_date}'.format(**locals()),
+        'output': 'csv'
     }
     url_options = urllib.urlencode(query)
     full_url = base_url + '?' + url_options
